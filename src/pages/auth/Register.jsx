@@ -14,8 +14,9 @@ import {
   Sparkles,
   MapPin,
   KeyRound,
+  Eraser,
 } from "lucide-react";
-
+import axios from "axios"
 const Register = () => {
   const [role, setRole] = useState("guest");
   const [showPassword, setShowPassword] = useState(false);
@@ -87,7 +88,13 @@ const Register = () => {
       role,
       password,
     });
-
+    
+   axios.post("http://localhost:3000/usersign",{ fullName: fullName.trim(),
+      email: email.trim(),
+      role,
+      password,})
+    .then(() => alert("data inserted"))
+    .catch(err => console.log(err))
     setSuccess(
       "Your details are valid! Backend integration is the next step."
     );

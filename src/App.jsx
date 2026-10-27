@@ -5,6 +5,7 @@ import Explore from "./pages/public/Explore"
 import About from "./pages/public/About"
 import Contact from "./pages/public/Contact"
 import Register from "./pages/auth/Register"
+import Login from "./pages/auth/Login"
 
 
 
@@ -20,6 +21,7 @@ const App = () => {
       <Route path="/contact" element = {<Contact />} />
       </Route>
       <Route path="/register" element ={<Register />} />
+      <Route path ="/login" element = {<Login />} />
    </Routes>
    </>
   )
