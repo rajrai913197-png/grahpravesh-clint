@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   House,
@@ -15,11 +15,18 @@ import {
   BriefcaseBusiness,
   LogIn,
   UserPlus,
-  Headset,
   LogOut,
   UserRound,
   ArrowRight,
+  Settings,
 } from "lucide-react";
+
+const navLinks = [
+  { name: "Home", path: "/" },
+  { name: "Explore Stays", path: "/explore" },
+  { name: "About Us", path: "/about" },
+  { name: "Help & Support", path: "/contact" },
+];
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -30,15 +37,45 @@ const Navbar = () => {
   const [checkIn, setCheckIn] = useState("");
   const [guests, setGuests] = useState("2");
 
-  // Authentication will be connected through AuthContext later.
-  const user = null;
+  const [token, setToken] = useState(() =>
+    localStorage.getItem("token")
+  );
 
-  const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Explore Stays", path: "/explore" },
-    { name: "About Us", path: "/about" },
-    { name: "Help & Support", path: "/contact" },
-  ];
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const syncAuth = () => {
+      setToken(localStorage.getItem("token"));
+
+      try {
+        const storedUser = localStorage.getItem("user");
+        const parsedUser = storedUser
+          ? JSON.parse(storedUser)
+          : null;
+
+        setUserName(
+          parsedUser?.fullName ||
+            parsedUser?.name ||
+            parsedUser?.username ||
+            ""
+        );
+      } catch {
+        setUserName("");
+      }
+    };
+
+    syncAuth();
+
+    window.addEventListener("storage", syncAuth);
+    window.addEventListener("authChanged", syncAuth);
+
+    return () => {
+      window.removeEventListener("storage", syncAuth);
+      window.removeEventListener("authChanged", syncAuth);
+    };
+  }, []);
+
+  const isAuthenticated = Boolean(token);
 
   const closeMenus = () => {
     setMobileMenuOpen(false);
@@ -50,20 +87,44 @@ const Navbar = () => {
 
     const params = new URLSearchParams();
 
-    if (location.trim()) params.set("location", location.trim());
-    if (checkIn) params.set("checkIn", checkIn);
-    if (guests) params.set("guests", guests);
+    if (location.trim()) {
+      params.set("location", location.trim());
+    }
 
-    setMobileMenuOpen(false);
+    if (checkIn) {
+      params.set("checkIn", checkIn);
+    }
 
-    navigate(`/explore?${params.toString()}`);
+    if (guests) {
+      params.set("guests", guests);
+    }
+
+    closeMenus();
+
+    const query = params.toString();
+
+    navigate(query ? `/explore?${query}` : "/explore");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    setToken(null);
+    setUserName("");
+
+    closeMenus();
+
+    navigate("/login", { replace: true });
   };
 
   return (
     <header className="relative top-0 z-50 w-full bg-white">
       {/* Announcement Bar */}
       <div className="flex min-h-[36px] flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-[#B7D8F5] px-3 py-2 text-center text-[11px] font-semibold text-[#0B1424] sm:text-xs">
-        <span>Find your perfect stay, wherever life takes you.</span>
+        <span>
+          Find your perfect stay, wherever life takes you.
+        </span>
 
         <Link
           to="/explore"
@@ -107,6 +168,7 @@ const Navbar = () => {
                 key={link.path}
                 to={link.path}
                 end={link.path === "/"}
+                onClick={closeMenus}
                 className={({ isActive }) =>
                   `relative whitespace-nowrap py-2 text-xs font-semibold transition xl:text-[13px] ${
                     isActive
@@ -122,9 +184,10 @@ const Navbar = () => {
 
           {/* Right Actions */}
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-            {!user && (
+            {!isAuthenticated && (
               <Link
                 to="/become-host"
+                onClick={closeMenus}
                 className="hidden items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-2 text-xs font-bold text-[#0B1424] transition hover:bg-[#F0F7FD] hover:text-[#E10600] xl:flex"
               >
                 <Building2 size={16} />
@@ -136,12 +199,13 @@ const Navbar = () => {
             <button
               type="button"
               aria-label="Language settings"
+              title="Language settings"
               className="hidden h-9 w-9 items-center justify-center rounded-full text-[#0B1424] transition hover:bg-[#F0F7FD] hover:text-[#E10600] sm:flex"
             >
               <Globe size={18} />
             </button>
 
-            {/* Profile Dropdown */}
+            {/* First Hamburger: Profile Dropdown */}
             <div className="relative">
               <button
                 type="button"
@@ -164,9 +228,10 @@ const Navbar = () => {
                 </span>
               </button>
 
+              {/* Profile Dropdown */}
               {profileMenuOpen && (
                 <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(280px,calc(100vw-24px))] overflow-hidden rounded-2xl border border-[#0B1424]/10 bg-white p-2 shadow-xl shadow-[#0B1424]/10">
-                  {!user ? (
+                  {!isAuthenticated ? (
                     <>
                       <div className="border-b border-slate-100 px-4 py-3">
                         <p className="text-sm font-bold text-[#0B1424]">
@@ -198,10 +263,22 @@ const Navbar = () => {
                     </>
                   ) : (
                     <>
+                      <div className="border-b border-slate-100 px-4 py-3">
+                        <p className="text-sm font-bold text-[#0B1424]">
+                          {userName
+                            ? `Welcome, ${userName}`
+                            : "Welcome back!"}
+                        </p>
+
+                        <p className="mt-1 text-xs text-slate-500">
+                          Manage your stays and account.
+                        </p>
+                      </div>
+
                       <Link
                         to="/myprofile"
                         onClick={closeMenus}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[#0B1424] hover:bg-[#F0F7FD]"
+                        className="mt-2 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[#0B1424] hover:bg-[#F0F7FD]"
                       >
                         <UserRound size={17} />
                         My Profile
@@ -225,36 +302,36 @@ const Navbar = () => {
                         Wishlist
                       </Link>
 
+                      <Link
+                        to="/settings"
+                        onClick={closeMenus}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[#0B1424] hover:bg-[#F0F7FD]"
+                      >
+                        <Settings size={17} />
+                        Settings
+                      </Link>
+
                       <button
                         type="button"
-                        onClick={closeMenus}
-                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[#E10600] hover:bg-red-50"
+                        onClick={handleLogout}
+                        className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[#E10600] transition hover:bg-red-50"
                       >
                         <LogOut size={17} />
                         Log out
                       </button>
                     </>
                   )}
-
-                  <div className="mt-1 border-t border-slate-100 pt-1">
-                    <Link
-                      to="/contact"
-                      onClick={closeMenus}
-                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-600 transition hover:bg-[#F0F7FD] hover:text-[#0B1424]"
-                    >
-                      <Headset size={17} />
-                      Help & Support
-                    </Link>
-                  </div>
                 </div>
               )}
             </div>
 
-            {/* Mobile Menu Toggle */}
+            {/* Second Hamburger: Mobile Navigation Only */}
             <button
               type="button"
               aria-label={
-                mobileMenuOpen ? "Close navigation" : "Open navigation"
+                mobileMenuOpen
+                  ? "Close navigation"
+                  : "Open navigation"
               }
               aria-expanded={mobileMenuOpen}
               onClick={() => {
@@ -263,14 +340,16 @@ const Navbar = () => {
               }}
               className="flex h-10 w-10 items-center justify-center rounded-full text-[#0B1424] transition hover:bg-[#F0F7FD] lg:hidden"
             >
-              {mobileMenuOpen ? <X size={21} /> : <Menu size={21} />}
+              {mobileMenuOpen ? (
+                <X size={21} />
+              ) : (
+                <Menu size={21} />
+              )}
             </button>
           </div>
         </div>
 
-        {/* Responsive Search Bar
-            Mobile: hides when hamburger menu is open.
-            Desktop: always visible. */}
+        {/* Search Bar */}
         <div
           className={`border-t border-[#0B1424]/[0.05] px-3 py-3 sm:px-6 lg:py-4 ${
             mobileMenuOpen ? "hidden lg:block" : "block"
@@ -302,7 +381,10 @@ const Navbar = () => {
 
             {/* Check-in */}
             <label className="flex min-w-0 items-center gap-2.5 rounded-xl px-3 py-2.5 transition hover:bg-[#F0F7FD] sm:border-l sm:border-[#0B1424]/10 sm:px-3 sm:py-2">
-              <CalendarDays size={18} className="shrink-0 text-[#E10600]" />
+              <CalendarDays
+                size={18}
+                className="shrink-0 text-[#E10600]"
+              />
 
               <span className="min-w-0 flex-1">
                 <span className="block text-[11px] font-bold text-[#0B1424]">
@@ -352,13 +434,15 @@ const Navbar = () => {
               className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#E10600] text-white transition hover:bg-[#C10500] active:scale-[0.99] sm:h-11 sm:w-11 sm:rounded-full"
             >
               <Search size={19} strokeWidth={2.5} />
-              <span className="text-sm font-bold sm:hidden">Search stays</span>
+              <span className="text-sm font-bold sm:hidden">
+                Search stays
+              </span>
             </button>
           </form>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation: Help & Support stays here */}
       {mobileMenuOpen && (
         <div className="absolute left-0 right-0 top-full z-40 border-t border-[#0B1424]/10 bg-white px-4 pb-5 pt-3 shadow-xl lg:hidden">
           <nav className="mx-auto max-w-7xl">
@@ -367,7 +451,7 @@ const Navbar = () => {
                 key={link.path}
                 to={link.path}
                 end={link.path === "/"}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={closeMenus}
                 className={({ isActive }) =>
                   `flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-semibold transition ${
                     isActive
@@ -380,24 +464,6 @@ const Navbar = () => {
                 <ArrowRight size={16} />
               </NavLink>
             ))}
-
-            <Link
-              to="/become-host"
-              onClick={closeMenus}
-              className="mt-2 flex items-center gap-3 rounded-xl border border-[#B7D8F5] bg-[#F0F7FD] px-4 py-3.5 text-sm font-bold text-[#0B1424] transition hover:border-[#FFD700]"
-            >
-              <Building2 size={18} />
-              Become a Host
-            </Link>
-
-            <Link
-              to="/contact"
-              onClick={closeMenus}
-              className="mt-2 flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold text-slate-600 transition hover:bg-[#F0F7FD]"
-            >
-              <Headset size={18} />
-              Help & Support
-            </Link>
           </nav>
         </div>
       )}

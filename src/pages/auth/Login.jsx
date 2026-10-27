@@ -52,7 +52,7 @@ const Login = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:3000/userLogin",
+        "http://localhost:3000/userlogin",
         {
           email: formData.email.trim(),
           password: formData.password,
