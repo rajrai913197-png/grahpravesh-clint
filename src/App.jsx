@@ -4,6 +4,7 @@ import Home from "./pages/public/Home"
 import Explore from "./pages/public/Explore"
 import About from "./pages/public/About"
 import Contact from "./pages/public/Contact"
+import Register from "./pages/auth/Register"
 
 
 
@@ -18,6 +19,7 @@ const App = () => {
       <Route path="/about" element = {<About />} />
       <Route path="/contact" element = {<Contact />} />
       </Route>
+      <Route path="/register" element ={<Register />} />
    </Routes>
    </>
   )
