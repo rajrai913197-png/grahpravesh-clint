@@ -54,6 +54,8 @@ const Navbar = () => {
     if (checkIn) params.set("checkIn", checkIn);
     if (guests) params.set("guests", guests);
 
+    setMobileMenuOpen(false);
+
     navigate(`/explore?${params.toString()}`);
   };
 
@@ -65,6 +67,7 @@ const Navbar = () => {
 
         <Link
           to="/explore"
+          onClick={closeMenus}
           className="inline-flex items-center gap-1 font-bold text-[#E10600] transition hover:text-[#0B1424]"
         >
           Explore stays <ArrowRight size={13} />
@@ -82,6 +85,7 @@ const Navbar = () => {
           >
             <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E10600] text-white shadow-sm transition group-hover:-translate-y-0.5">
               <House size={22} strokeWidth={2.4} />
+
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full border border-white bg-[#FFD700]" />
             </span>
 
@@ -128,6 +132,7 @@ const Navbar = () => {
               </Link>
             )}
 
+            {/* Language Button */}
             <button
               type="button"
               aria-label="Language settings"
@@ -142,7 +147,10 @@ const Navbar = () => {
                 type="button"
                 aria-label="Open profile menu"
                 aria-expanded={profileMenuOpen}
-                onClick={() => setProfileMenuOpen((prev) => !prev)}
+                onClick={() => {
+                  setProfileMenuOpen((prev) => !prev);
+                  setMobileMenuOpen(false);
+                }}
                 className="flex h-10 items-center gap-2 rounded-full border border-[#0B1424]/10 bg-white py-1 pl-2.5 pr-1.5 transition hover:border-[#B7D8F5] hover:bg-[#F0F7FD] sm:pl-3"
               >
                 {profileMenuOpen ? (
@@ -164,6 +172,7 @@ const Navbar = () => {
                         <p className="text-sm font-bold text-[#0B1424]">
                           Welcome to Grah Pravesh
                         </p>
+
                         <p className="mt-1 text-xs text-slate-500">
                           Sign in to plan your next stay.
                         </p>
@@ -244,7 +253,9 @@ const Navbar = () => {
             {/* Mobile Menu Toggle */}
             <button
               type="button"
-              aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
+              aria-label={
+                mobileMenuOpen ? "Close navigation" : "Open navigation"
+              }
               aria-expanded={mobileMenuOpen}
               onClick={() => {
                 setMobileMenuOpen((prev) => !prev);
@@ -257,8 +268,14 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Responsive Search Bar */}
-        <div className="border-t border-[#0B1424]/[0.05] px-3 py-3 sm:px-6 lg:py-4">
+        {/* Responsive Search Bar
+            Mobile: hides when hamburger menu is open.
+            Desktop: always visible. */}
+        <div
+          className={`border-t border-[#0B1424]/[0.05] px-3 py-3 sm:px-6 lg:py-4 ${
+            mobileMenuOpen ? "hidden lg:block" : "block"
+          }`}
+        >
           <form
             onSubmit={handleSearch}
             className="mx-auto grid w-full max-w-3xl grid-cols-1 gap-1.5 rounded-2xl border border-[#0B1424]/10 bg-white p-2 shadow-[0_5px_25px_rgba(11,20,36,0.06)] transition focus-within:border-[#B7D8F5] sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,0.8fr)_48px] sm:items-center sm:gap-0 sm:rounded-full sm:py-1.5 sm:pl-3 sm:pr-2"
@@ -328,7 +345,7 @@ const Navbar = () => {
               </span>
             </label>
 
-            {/* Search */}
+            {/* Search Button */}
             <button
               type="submit"
               aria-label="Search stays"
@@ -366,7 +383,7 @@ const Navbar = () => {
 
             <Link
               to="/become-host"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={closeMenus}
               className="mt-2 flex items-center gap-3 rounded-xl border border-[#B7D8F5] bg-[#F0F7FD] px-4 py-3.5 text-sm font-bold text-[#0B1424] transition hover:border-[#FFD700]"
             >
               <Building2 size={18} />
@@ -375,7 +392,7 @@ const Navbar = () => {
 
             <Link
               to="/contact"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={closeMenus}
               className="mt-2 flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold text-slate-600 transition hover:bg-[#F0F7FD]"
             >
               <Headset size={18} />
