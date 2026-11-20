@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -37,46 +38,67 @@ const Login = () => {
     setSuccess("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    setError("");
-    setSuccess("");
+  setError("");
+  setSuccess("");
 
-    if (!formData.email.trim() || !formData.password) {
-      setError("Please enter your email and password.");
-      return;
-    }
+  if (!formData.email.trim() || !formData.password) {
+    setError("Please enter your email and password.");
+    return;
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const response = await axios.post(
-        "http://localhost:3000/userlogin",
-        {
-          email: formData.email.trim(),
-          password: formData.password,
-        }
-      );
-
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
+    const response = await axios.post(
+      "http://localhost:3000/userlogin",
+      {
+        email: formData.email.trim(),
+        password: formData.password,
       }
+    );
 
-      setSuccess("Login successful! Welcome to Grah Pravesh.");
+    const token = response.data.token;
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Login failed. Please check your credentials."
-      );
-    } finally {
-      setLoading(false);
+    if (!token) {
+      throw new Error("Token not received from server");
     }
-  };
+
+    // Save Token
+    localStorage.setItem("token", token);
+
+    // Decode JWT
+    const decoded = jwtDecode(token);
+
+    console.log("User Role:", decoded.role);
+
+    setSuccess("Login successful! Welcome to Grah Pravesh.");
+
+    // Role Based Navigation
+    setTimeout(() => {
+      if (decoded.role === "host") {
+        navigate("/host-dashboard");
+      } 
+      else if (decoded.role === "admin") {
+        navigate("/admin-dashboard");
+      } 
+      else {
+        navigate("/");
+      }
+    }, 700);
+
+  } catch (err) {
+    setError(
+      err.response?.data?.message ||
+      err.message ||
+      "Login failed. Please check your credentials."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#FFFDFC] text-[#172033]">
