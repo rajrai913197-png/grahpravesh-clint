@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -14,7 +14,7 @@ import {
   Sparkles,
   MapPin,
   KeyRound,
-  Eraser,
+  
 } from "lucide-react";
 import axios from "axios"
 const Register = () => {
@@ -23,7 +23,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -93,7 +93,7 @@ const Register = () => {
       email: email.trim(),
       role,
       password,})
-    .then(() => alert("data inserted"))
+    .then(() => alert("data inserted"),navigate("/login"))
     .catch(err => console.log(err))
     setSuccess(
       "Your details are valid! Backend integration is the next step."
@@ -551,6 +551,7 @@ const Register = () => {
 
               {/* Submit */}
               <button
+                
                 type="submit"
                 className="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-[#E50909] px-5 py-3.5 text-sm font-bold tracking-wide text-white shadow-md shadow-red-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#C90000] hover:shadow-lg active:translate-y-0"
               >

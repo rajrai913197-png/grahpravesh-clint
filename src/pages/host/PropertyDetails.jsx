@@ -37,7 +37,7 @@ const PropertyDetails = () => {
   useEffect(() => {
     fetchProperty();
   }, [id]);
-
+  
   // Image URL Helper
   const getImageUrl = (image) => {
     if (!image) {
@@ -87,7 +87,11 @@ const PropertyDetails = () => {
       </div>
     );
   }
-
+  const dlt = (id)=>{
+      axios.delete(`http://localhost:3000/propertydelete/${id}`)
+      .then(()=> console.log("data delete successfully"),navigate("/my-properties"))
+      .catch((err)=> console.log(err))
+  }
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
 
@@ -337,7 +341,7 @@ const PropertyDetails = () => {
 
               {/* Edit Button */}
               <button
-                onClick={() => alert("Edit functionality will be added next")}
+                onClick={() => navigate(`/edit-property/${id}`)}
                 className="w-full mt-5 border border-gray-200 py-3 rounded-xl font-semibold text-[#17243B] hover:bg-gray-50 transition"
               >
                 ✏️ Edit Property
@@ -345,7 +349,7 @@ const PropertyDetails = () => {
 
               {/* Delete Button */}
               <button
-                onClick={() => alert("Delete functionality will be added next")}
+                onClick={() => dlt({id}) }
                 className="w-full mt-3 border border-red-200 text-red-600 py-3 rounded-xl font-semibold hover:bg-red-50 transition"
               >
                 🗑️ Delete Property

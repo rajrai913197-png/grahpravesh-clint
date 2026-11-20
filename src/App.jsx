@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/guards/ProtectedRoute"
 import HostDashboard from "./pages/host/HostDashboard"
 import MyProperties from "./pages/host/MyProperties"
 import PropertyDetails from "./pages/host/PropertyDetails"
+import EditProperty from "./pages/host/EditProperty"
 
 
 
@@ -40,6 +41,7 @@ const App = () => {
       } />
       <Route path="my-properties" element = {<MyProperties />} />
       <Route path="property-details/:id" element= {<PropertyDetails />} />
+      <Route path="edit-property/:id" element = {<EditProperty />} />
    </Routes>
    </>
   )
